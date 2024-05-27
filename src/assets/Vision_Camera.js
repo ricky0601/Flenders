@@ -41,9 +41,9 @@ function VisionCamera() {
     }
   };
 
-  const toggleCameraType = () => {
-    setCameraType((prev) => (prev === 'back' ? 'front' : 'back'));
-  };
+  // const toggleCameraType = () => {
+  //   setCameraType((prev) => (prev === 'back' ? 'front' : 'back'));
+  // }; 카메라 정면 후면 전환 버튼 아직 필요성 X
 
   if (device == null) return <Loading />;
 
@@ -58,9 +58,9 @@ function VisionCamera() {
       />
       <View style={styles.controls}>
         <TouchableOpacity style={styles.captureButton} onPress={takePicture} accessibilityLabel="카메라 버튼" />
-        <TouchableOpacity style={styles.toggleButton} onPress={toggleCameraType}>
+        {/* <TouchableOpacity style={styles.toggleButton} onPress={toggleCameraType}>
           <Text style={styles.buttonText}>카메라 전환</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </SafeAreaView>
   );
@@ -86,6 +86,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   toggleButton: {
+    alignItems: 'flex-end',
     backgroundColor: 'blue',
     padding: 10,
     borderRadius: 5,
