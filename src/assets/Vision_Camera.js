@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, Alert, TouchableOpacity } from 'react-native';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
+import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import Loading from '../screens/Loading';
 import { useAppState } from '@react-native-community/hooks';
 import { useIsFocused } from '@react-navigation/native';
@@ -8,7 +9,7 @@ import { useIsFocused } from '@react-navigation/native';
 function VisionCamera() {
   const isFocused = useIsFocused();
   const appState = useAppState();
-  const isActive = isFocused && appState === "active";
+  const isActive = isFocused && appState === 'active';
   const devices = useCameraDevices();
   const [cameraType, setCameraType] = useState('back');
   const device = devices[cameraType];
@@ -18,8 +19,8 @@ function VisionCamera() {
     (async () => {
       const status = await Camera.requestCameraPermission();
       if (status !== 'authorized') {
-        Alert.alert('Camera Permission', 'Camera access is required to use this feature.', [
-          { text: 'OK' },
+        Alert.alert('카메라 권한', '이 기능을 사용하려면 카메라 접근 권한이 필요합니다.', [
+          { text: '확인' },
         ]);
       }
     })();
@@ -28,21 +29,21 @@ function VisionCamera() {
   const takePicture = async () => {
     try {
       if (camera.current) {
-        const photo = await camera.current.takePhoto({
-          flash: 'auto',
-        });
-        console.log('Photo taken:', photo);
-        Alert.alert('Success', 'Photo taken successfully!');
+        const photo = await camera.current.takePhoto();
+        const filePath = `file://${photo.path}`;
+        await CameraRoll.save(filePath, { type: 'photo' });
+        console.log('사진 촬영 완료:', photo);
+        Alert.alert('성공', '사진이 성공적으로 촬영되었습니다!');
       }
     } catch (error) {
-      console.error('Error taking picture:', error);
-      Alert.alert('Error', 'Failed to take photo. Please try again.');
+      console.error('사진 촬영 오류:', error);
+      Alert.alert('오류', '사진 촬영에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
   const toggleCameraType = () => {
     setCameraType((prev) => (prev === 'back' ? 'front' : 'back'));
-  };    //카메라 전환 기능 아직은 필요성 못느낌
+  };
 
   if (device == null) return <Loading />;
 
@@ -56,7 +57,10 @@ function VisionCamera() {
         photo={true}
       />
       <View style={styles.controls}>
-        <TouchableOpacity style={styles.captureButton} onPress={takePicture} accessibilityLabel="카메라 버튼"/>
+        <TouchableOpacity style={styles.captureButton} onPress={takePicture} accessibilityLabel="카메라 버튼" />
+        <TouchableOpacity style={styles.toggleButton} onPress={toggleCameraType}>
+          <Text style={styles.buttonText}>카메라 전환</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
