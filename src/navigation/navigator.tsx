@@ -1,8 +1,8 @@
 import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
-import First from '../screens/First';
-import Second from '../screens/Second';
+import CameraScreen from '../screens/CameraScreen';
+import VoiceScreen from '../screens/VoiceScreen';
 import Third from '../screens/Third';
 
 const Tab = createMaterialTopTabNavigator();
@@ -13,8 +13,8 @@ function Tabs() {
     screenOptions={{
       tabBarLabelStyle: { fontSize: 16},
     }}>
-      <Tab.Screen name="카메라" component={First}/>
-      <Tab.Screen name="음성 검색" component={Second}/>
+      <Tab.Screen name="카메라" component={CameraScreen}/>
+      <Tab.Screen name="음성 검색" component={VoiceScreen}/>
       <Tab.Screen name="HELP" component={Third}/>
     </Tab.Navigator>
   );

@@ -1,4 +1,3 @@
-/*
 import React, { useState, useEffect, useRef } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, Alert, TouchableOpacity } from 'react-native';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
@@ -94,4 +93,3 @@ const styles = StyleSheet.create({
 });
 
 export default VisionCamera;
-*/

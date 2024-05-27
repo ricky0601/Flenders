@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, View, Image } from 'react-native';
 import { TouchableOpacity } from 'react-native';
 
-const Second = () => {
+const VoiceScreen = () => {
   return (
     <View
       style={{
@@ -42,4 +42,4 @@ const Second = () => {
   );
 };
 
-export default Second;
+export default VoiceScreen;
