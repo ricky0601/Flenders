@@ -24,11 +24,11 @@ export default function App() {
     <View
       style={{
         justifyContent: 'center',
-        backgroundColor:'white',
+        backgroundColor:'black',
         alignItems: 'center',
         paddingTop: 20,
       }}>
-      <Text style={{color: 'black', fontSize: 20, fontWeight: 'bold'}}>Flenders</Text>
+      <Text style={{color: 'white', fontSize: 20, fontWeight: 'bold'}}>Flenders</Text>
     </View>
      <AppNavigator />
    </>

@@ -8,7 +8,7 @@ import ImageResizer from 'react-native-image-resizer';
 import styles from '../styles/Vision_Camera_Style';
 import Tts from 'react-native-tts';
 
-export default function CameraScreen() {
+export default function TextReadingScreen() {
   const cameraRef = useRef(null);
   const devices = useCameraDevices();
   const device = devices.back;
@@ -94,7 +94,7 @@ const analyzePhoto = async (photoPath) => {
       name: 'photo.jpg',
     });
 
-    const response = await fetch('http://172.30.1.72:3000/analyze-photo', {
+    const response = await fetch('http://172.30.1.72:3000/text-photo', {
       method: 'POST',
       body: formData,
       headers: {
