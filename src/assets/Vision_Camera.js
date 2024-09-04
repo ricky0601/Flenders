@@ -1,43 +1,29 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { View, Alert, Text, TouchableOpacity, ActivityIndicator, Animated } from 'react-native';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
-import { useFocusEffect } from '@react-navigation/native';
-import RNFS from 'react-native-fs';
-import { PermissionsAndroid, Platform } from 'react-native';
-import ImageResizer from 'react-native-image-resizer';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { View, Animated, TouchableOpacity, Text, Alert } from 'react-native';
+import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
 import styles from '../styles/Vision_Camera_Style';
 import Tts from 'react-native-tts';
-import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
 
-export default function CameraScreen() {
+export default function VisionCamera({ mode, onCapture }) {
   const cameraRef = useRef(null);
   const devices = useCameraDevices();
   const device = devices.back;
-  const [loading, setLoading] = useState(false);
-  const [isActive, setIsActive] = useState(true);
-  const [zoom, setZoom] = useState(0);
-  const [tapCoords, setTapCoords] = useState({ x: 0, y: 0 });
-  const [showFocusRing, setShowFocusRing] = useState(false);
-  const baseZoom = useRef(0);
+  const [zoom, setZoom] = useState(0);  // 줌 상태
+  const [tapCoords, setTapCoords] = useState({ x: 0, y: 0 });  // 포커스 위치
+  const [showFocusRing, setShowFocusRing] = useState(false);  // 포커스 링 표시 여부
+  const baseZoom = useRef(0);  // 줌 초기 상태
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
-  useFocusEffect(
-    React.useCallback(() => {
-      setIsActive(true);
-      return () => {
-        setIsActive(false);
-      };
-    }, [])
-  );
-
   useEffect(() => {
-    const requestCameraPermission = async () => {
+    const requestPermission = async () => {
       const permission = await Camera.requestCameraPermission();
-      if (permission === 'denied') await Linking.openSettings();
+      if (permission === 'denied') {
+        Alert.alert('카메라 권한이 필요합니다.');
+      }
     };
-
-    requestCameraPermission();
+    requestPermission();
   }, []);
 
   const handlePinchGesture = Gesture.Pinch()
@@ -78,85 +64,14 @@ export default function CameraScreen() {
     handleTapToFocus({ x, y });
   });
 
-  const saveToGallery = async (filePath) => {
-    try {
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          {
-            title: '저장소 권한 필요',
-            message: '이 앱이 사진을 갤러리에 저장하려면 저장소 권한이 필요합니다.',
-            buttonNeutral: '나중에 묻기',
-            buttonNegative: '취소',
-            buttonPositive: '확인',
-          }
-        );
-
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          const fileName = `IMG_${Date.now()}.jpg`;
-          const destPath = `${RNFS.PicturesDirectoryPath}/${fileName}`;
-
-          await RNFS.moveFile(filePath, destPath);
-          await RNFS.scanFile(destPath);
-          Alert.alert('성공', '사진이 갤러리에 저장되었습니다!');
-          
-          return destPath;
-        } else {
-          Alert.alert('오류', '저장소 권한이 거부되었습니다.');
-          return null;
-        }
-      }
-    } catch (error) {
-      console.error('갤러리에 사진 저장 중 오류 발생:', error);
-      Alert.alert('오류', '사진을 갤러리에 저장하지 못했습니다.');
-      return null;
-    }
-  };
-
   const takePhoto = async () => {
     if (cameraRef.current) {
-      const photo = await cameraRef.current.takePhoto({
-        qualityPrioritization: 'speed',
-      });
-      setLoading(true);
-      const savedPath = await saveToGallery(photo.path);
-      if (savedPath) {
-        const resizedPhoto = await ImageResizer.createResizedImage(savedPath, 800, 600, 'JPEG', 80);
-        await analyzePhoto(resizedPhoto.uri);
-        console.log('사진이 성공적으로 촬영 및 저장되었습니다.');
-      }
-      setLoading(false);
+      const photo = await cameraRef.current.takePhoto({ qualityPrioritization: 'speed' });
+      if (onCapture) onCapture(photo.path);
     }
   };
 
-  const analyzePhoto = async (photoPath) => {
-    try {
-      const formData = new FormData();
-      formData.append('photo', {
-        uri: 'file://' + photoPath,
-        type: 'image/jpeg',
-        name: 'photo.jpg',
-      });
-
-      const response = await fetch('http://34.105.81.56:3000/analyze-photo', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      const result = await response.json();
-      Alert.alert('분석 결과', result.text);
-      Tts.speak(result.text);
-    } catch (error) {
-      console.error('사진 분석 실패:', error);
-      Alert.alert('오류', '사진을 분석하지 못했습니다.');
-      Tts.speak('사진 분석에 실패했습니다.');
-    }
-  };
-
-  if (device == null || !isActive) return <View><Text>로딩 중...</Text></View>;
+  if (device == null) return <Text>로딩 중...</Text>;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -165,37 +80,33 @@ export default function CameraScreen() {
           <View style={{ flex: 1 }}>
             <Camera
               ref={cameraRef}
-              style={styles.camera}
+              style={{ flex: 1 }}
               device={device}
-              isActive={isActive}
+              isActive={true}
               photo={true}
-              zoom={zoom}
+              zoom={zoom}  // 카메라 줌 상태 반영
             />
             {showFocusRing && (
               <Animated.View
-                style={{
-                  position: 'absolute',
-                  left: tapCoords.x - 25,
-                  top: tapCoords.y - 25,
-                  width: 50,
-                  height: 50,
-                  borderRadius: 25,
-                  borderWidth: 2,
-                  borderColor: 'white',
-                  opacity: fadeAnim,
-                }}
+                style={[
+                  styles.focusRing,  // 스타일 파일에서 가져온 focusRing 스타일 사용
+                  {
+                    left: tapCoords.x - 25,  // 중심점을 계산해 원 위치 설정
+                    top: tapCoords.y - 25,
+                    opacity: fadeAnim,
+                  },
+                ]}
               />
             )}
           </View>
         </GestureDetector>
       </GestureDetector>
-      <View style={styles.controls}>
-        <TouchableOpacity style={styles.button} onPress={takePhoto} accessibilityLabel="카메라 버튼">
-          <Text style={styles.buttonText}>사진 촬영</Text>
-        </TouchableOpacity>
-        <Text style={styles.label}>버튼을 눌러 사진을 촬영하세요</Text>
+      <TouchableOpacity onPress={takePhoto} style={styles.cameraButton} accessibilityLabel="사진 촬영" accessibilityRole="button">
+        <Text style={styles.buttonText}>사진 촬영</Text>
+      </TouchableOpacity>
+      <View>
+        <Text style={styles.cameraButtonText}>위 버튼을 눌러 사진을 촬영하세요</Text>
       </View>
-      {loading && <ActivityIndicator size="large" color="#FFD700" />}
     </GestureHandlerRootView>
   );
 }
