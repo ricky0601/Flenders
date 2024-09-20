@@ -19,11 +19,11 @@ export default function CameraComponent() {
     
     let apiUrl;
     if (mode === 'AI 분석') {
-      apiUrl = 'http://34.105.81.56:3000/analyze-photo';
+      apiUrl = 'http://34.169.89.14:3000/analyze-photo';
     } else if (mode === '색상 인식') {
-      apiUrl = 'http://34.105.81.56:3000/color-photo';
+      apiUrl = 'http://34.169.89.14:3000/color-photo';
     } else if (mode === '글자 인식') {
-      apiUrl = 'http://34.105.81.56:3000/text-photo';
+      apiUrl = 'http://34.169.89.14:3000/text-photo';
     }
 
     const formData = new FormData();
